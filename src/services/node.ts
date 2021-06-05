@@ -5,6 +5,8 @@ import { Config } from '../loaders/config_loader';
 export class Node extends EventEmitter {
     private ws: WebSocket;
 
+    // TODO add method to publish blocks
+    
     public constructor(config: Config) {
         super();
 
