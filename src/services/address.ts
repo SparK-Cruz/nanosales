@@ -74,6 +74,10 @@ export class Address {
         return subject.address;
     }
 
+    public addPayment(address: string, payment: PaymentInfo): void {
+        // TODO attach payment info
+    }
+
     public check(address: string): CheckInfo|null {
         const subject = this.info.find((value, index, obj) => {
             return value.address === address;
