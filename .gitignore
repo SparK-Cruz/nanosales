@@ -1,0 +1,6 @@
+node_modules
+dist
+
+wallet.seed
+settle.pub
+data/pool.json

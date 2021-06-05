@@ -1,0 +1,19 @@
+{
+  "name": "nanosales",
+  "version": "1.0.0",
+  "description": "Nano Payment Gateway Helper",
+  "main": "",
+  "repository": "https://github.com/SparK-Cruz/nanosales.git",
+  "author": "SparK-Cruz <spark.crz@gmail.com>",
+  "license": "CC0-1.0",
+  "private": false,
+  "devDependencies": {
+    "@types/node": "^15.12.1",
+    "typescript": "^4.3.2"
+  },
+  "dependencies": {
+    "@thelamer/nanocurrency": "^2.5.1",
+    "nano-address-validator": "^3.0.0",
+    "ws": "^7.4.6"
+  }
+}
