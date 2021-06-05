@@ -95,15 +95,24 @@ export class Address {
             return value.address === address;
         });
 
-        // TODO add work
-
-        nano.createBlock(subject.key, {
+        const block = nano.createBlock(subject.key, {
             balance: '0',
             representative: this.settler, // placeholder
-            work: null, // TODO add work
+            work: null,
             link: this.settler,
             previous: subject.payment.block
         });
+
+        delete subject.payment;
+        delete subject.order;
+
+        // Assynchronous part
+        nano.computeWork(block.hash)
+            .then(work => {
+                block.block.work = work;
+
+                // TODO send the block via RPC
+            })
     }
 
     private save() {
