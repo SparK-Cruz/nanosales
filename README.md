@@ -54,8 +54,8 @@ This endpoint informs the shop about the payment status, it is meant to be calle
 
 ```
 {
-    "paid": false, // boolean that indicates if balance is greater or equal than amount
-    "amount": 1000000000000000000000000000000,
+    "paid": false, // boolean that indicates if paid amount is greater or equal than requested amount
+    "price": 1000000000000000000000000000000,
     "balance": 990000000000000000000000000000
 }
 ```

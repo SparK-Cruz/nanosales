@@ -27,7 +27,7 @@ export interface AddressInfo {
 export class Address {
     private info: AddressInfo[] = [];
 
-    public constructor(private seed: string, private settler: string) {
+    public constructor(private seed: string) {
         this.info = PoolPersistence.load();
     }
 
@@ -68,24 +68,23 @@ export class Address {
             return this.bindAvailable(order);
         }
 
-        
         subject.order = order;
         this.save();
         return subject.address;
     }
 
     public addPayment(address: string, payment: PaymentInfo): void {
-        // TODO attach payment info
+        const subject = this.find(address);
+        subject.payment = payment;
+        this.save();
     }
 
     public check(address: string): CheckInfo|null {
-        const subject = this.info.find((value, index, obj) => {
-            return value.address === address;
-        });
+        const subject = this.find(address);
 
         if (!subject || !subject.order)
             return null;
-        
+
         const [req, rec] = [subject.order.amount, subject.payment?.amount || 0];
         return {
             requestedAmount: req,
@@ -94,29 +93,19 @@ export class Address {
         };
     }
 
-    public settle(address: string) {
-        const subject = this.info.find((value, index, obj) => {
-            return value.address === address;
-        });
-
-        const block = nano.createBlock(subject.key, {
-            balance: '0',
-            representative: this.settler, // placeholder
-            work: null,
-            link: this.settler,
-            previous: subject.payment.block
-        });
+    public release(address: string) {
+        const subject = this.find(address);
 
         delete subject.payment;
         delete subject.order;
 
-        // Assynchronous part
-        nano.computeWork(block.hash)
-            .then(work => {
-                block.block.work = work;
+        this.save();
+    }
 
-                // TODO send the block via RPC
-            })
+    public find(address: string): AddressInfo {
+        return this.info.find((value, index, obj) => {
+            return value.address === address;
+        });
     }
 
     private save() {

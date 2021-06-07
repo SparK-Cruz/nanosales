@@ -32,19 +32,6 @@ blakejs@^1.1.0:
   resolved "https://registry.yarnpkg.com/blakejs/-/blakejs-1.1.0.tgz#69df92ef953aa88ca51a32df6ab1c54a155fc7a5"
   integrity sha1-ad+S75U6qIylGjLfarHFShVfx6U=
 
-nano-address-validator@^3.0.0:
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/nano-address-validator/-/nano-address-validator-3.0.0.tgz#0f03bab03521478cc49e699376488f699c139616"
-  integrity sha512-tt5YvBcbBQ7Wp4viHTNzo4mKFbtFuUAI56VcBLoqp48UmfWhcxYORZQjpCJ0b7DbLA3Omj2k1zWAWJ5sEXoItA==
-  dependencies:
-    blakejs "^1.1.0"
-    nano-base32 "^1.0.1"
-
-nano-base32@^1.0.1:
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/nano-base32/-/nano-base32-1.0.1.tgz#ba548c879efcfb90da1c4d9e097db4a46c9255ef"
-  integrity sha1-ulSMh578+5DaHE2eCX20pGySVe8=
-
 typescript@^4.3.2:
   version "4.3.2"
   resolved "https://registry.yarnpkg.com/typescript/-/typescript-4.3.2.tgz#399ab18aac45802d6f2498de5054fcbbe716a805"

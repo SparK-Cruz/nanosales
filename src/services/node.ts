@@ -1,16 +1,97 @@
-import * as WebSocket from 'ws';
 import { EventEmitter } from 'events';
-import { Config } from '../loaders/config_loader';
+import * as WebSocket from 'ws';
+import * as nano from '@thelamer/nanocurrency';
+
+import { RpcClient } from './rpc_client';
+import { AddressInfo } from './address';
+
+export enum BlockType {
+    SEND = 'send',
+    RECEIVE = 'receive'
+}
+
+export interface BlockInfo {
+    blockAccount: string,
+    amount: number,
+    balance: number,
+    height: number,
+    localTimestamp: number,
+    confirmed: boolean,
+    contents: {
+        type: string,
+        account: string,
+        previous: string,
+        representative: string,
+        balance: number,
+        link: string,
+        linkAsAccount: string,
+        signature: string,
+        work: string
+    },
+    subtype: string
+}
 
 export class Node extends EventEmitter {
     private ws: WebSocket;
+    private rpc: RpcClient;
 
-    // TODO add method to publish blocks
-    
-    public constructor(config: Config) {
+    public constructor(ws: string, rpc: string) {
         super();
 
-        this.bindSocket(new WebSocket(config.nodeWs));
+        this.rpc = new RpcClient(rpc);
+        this.bindSocket(new WebSocket(ws));
+    }
+
+    public info(blockHash: string): Promise<BlockInfo> {
+        const payload: any = {
+            action: "block_info",
+            json_block: "true",
+            hash: blockHash
+        };
+
+        return new Promise((resolve, reject) => {
+            this.rpc.send(payload)
+                .then(obj => {
+                    resolve({
+                        blockAccount: obj.block_account,
+                        amount: Number.parseInt(obj.amount),
+                        balance: Number.parseInt(obj.balance),
+                        height: Number.parseInt(obj.height),
+                        localTimestamp: Number.parseInt(obj.local_timestamp),
+                        confirmed: obj.confirmed === 'true',
+                        contents: {
+                            type: obj.contents.type,
+                            account: obj.contents.account,
+                            previous: obj.contents.previous,
+                            representative: obj.contents.representative,
+                            balance: Number.parseInt(obj.contents.balance),
+                            link: obj.contents.link,
+                            linkAsAccount: obj.contents.link_as_account,
+                            signature: obj.contents.signature,
+                            work: obj.contents.work
+                        },
+                        subtype: obj.subtype
+                    });
+                })
+                .catch(reject);
+        })
+    }
+
+    public publish(address: AddressInfo, type: BlockType, block: nano.BlockData): Promise<string> {
+        const payload: any = {
+            action: 'process',
+            json_block: 'true',
+            subtype: type,
+            block: nano.createBlock(address.key, block)
+        };
+
+        return new Promise((resolve, reject) => {
+            this.rpc.send(payload)
+                .then(res => {
+                    resolve(res.hash);
+                })
+                .catch(reject);
+        });
     }
 
     public addSub(address: string): void {
