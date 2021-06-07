@@ -65,7 +65,7 @@ This endpoint informs the shop about the payment status, it is meant to be calle
 
 Once payment is confirmed on the shop it can release the address and settle the balance on their main address.
 It is recommended that uppon settlement the address is removed from the shop's order information to avoid mix ups.
-This software will generate logs for every transaction.
+TODO: generate logs for every transaction.
 
 # BUILDING
 
