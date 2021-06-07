@@ -56,12 +56,20 @@ export class Node extends EventEmitter {
         return new Promise((resolve, reject) => {
             this.rpc.send(payload)
                 .then(info => {
-                resolve({
-                    hash: info.frontier || null,
-                    balance: Number.parseInt(info.balance)
-                });
-            })
-            .catch(reject);
+                    if (typeof info.error !== 'undefined') {
+                        resolve({
+                            hash: null,
+                            balance: 0
+                        });
+                        return;
+                    }
+
+                    resolve({
+                        hash: info.frontier,
+                        balance: Number.parseInt(info.balance)
+                    });
+                })
+                .catch(reject);
         });
     }
 
