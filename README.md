@@ -1,7 +1,8 @@
 Nano Sales - Payment Gateway Helper
 ===================================
 
-**WARNING: this project uses `yarn`**
+**WARNING: this project requires `yarn`**
+`sudo npm install -g yarn`
 
 This payment gateway helper is configured with three files:
 
@@ -68,8 +69,8 @@ This software will generate logs for every transaction.
 
 # BUILDING
 
-`yarn tsc`
+`yarn build`
 
 # RUNNING
 
-`node dist/index.js`
+`yarn serve`

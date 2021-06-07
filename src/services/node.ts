@@ -10,6 +10,11 @@ export enum BlockType {
     RECEIVE = 'receive'
 }
 
+export interface Pending {
+    block: string,
+    amount: number,
+}
+
 export interface BlockInfo {
     blockAccount: string,
     amount: number,
@@ -40,6 +45,46 @@ export class Node extends EventEmitter {
 
         this.rpc = new RpcClient(rpc);
         this.bindSocket(new WebSocket(ws));
+    }
+
+    public head(address: string): Promise<{hash: string, balance: number}> {
+        const payload = {
+            action: 'account_info',
+            account: address,
+        };
+
+        return new Promise((resolve, reject) => {
+            this.rpc.send(payload)
+                .then(info => {
+                resolve({
+                    hash: info.frontier || null,
+                    balance: Number.parseInt(info.balance)
+                });
+            })
+            .catch(reject);
+        });
+    }
+
+    public pending(address: string): Promise<Pending[]> {
+        const payload = {
+            action: 'pending',
+            account: address
+        };
+
+        return new Promise((resolve, reject) => {
+            this.rpc.send(payload)
+                .then(data => {
+                    const list: Pending[] = [];
+                    for(let hash in data.blocks) {
+                        list.push({
+                            block: hash,
+                            amount: Number.parseInt(data.blocks[hash])
+                        });
+                    }
+                    resolve(list);
+                })
+                .catch(reject);
+        });
     }
 
     public info(blockHash: string): Promise<BlockInfo> {

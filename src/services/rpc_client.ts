@@ -34,7 +34,7 @@ export class RpcClient {
             port: this.port,
             path: this.path,
             method: method,
-        }
+        };
 
         if (method === Method.POST) {
             options.headers = {

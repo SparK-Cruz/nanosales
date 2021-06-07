@@ -1,7 +1,7 @@
 import * as nano from '@thelamer/nanocurrency';
 import * as files from './files';
 
-export const loadSeed = () => {
+export const loadSeed = (): Promise<string> => {
     return new Promise((resolve, reject) => {
         files.read(files.SEED)
             .then(data => {

@@ -6,7 +6,7 @@ export interface Config {
     nodeRpc: string,
 };
 
-export const loadConfig = () => {
+export const loadConfig = (): Promise<Config> => {
     return new Promise((resolve, reject) => {
         files.read(files.CONFIG)
             .then((data: string) => {

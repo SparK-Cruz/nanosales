@@ -15,6 +15,7 @@ export interface OrderInfo {
 export interface PaymentInfo {
     block: string, // receive block on our wallet
     amount: number, // received amount
+    balance?: number, // address total balance (optional)
 }
 
 export interface AddressInfo {
@@ -59,17 +60,11 @@ export class Address {
     }
 
     public bindAvailable(order: OrderInfo): string {
-        const subject = this.info.find((value, index, obj) => {
-            return !value.order;
-        });
-
-        if (!subject) {
-            this.create();
-            return this.bindAvailable(order);
-        }
+        const subject = this.findAvailable(order.callbackUrl);
 
         subject.order = order;
         this.save();
+
         return subject.address;
     }
 
@@ -83,13 +78,13 @@ export class Address {
         const subject = this.find(address);
 
         if (!subject || !subject.order)
-            return null;
+            throw 'E01: Unknown address!';
 
         const [req, rec] = [subject.order.amount, subject.payment?.amount || 0];
         return {
+            paid: rec >= req,
             requestedAmount: req,
             receivedAmount: rec,
-            paid: rec >= req,
         };
     }
 
@@ -106,6 +101,27 @@ export class Address {
         return this.info.find((value, index, obj) => {
             return value.address === address;
         });
+    }
+
+    private findAvailable(avoidDuplicateUrl: string): AddressInfo {
+        const subject = this.info.find((value, index, obj) => {
+            return !value.order;
+        });
+
+        const duplicate = this.info.find((value, index, obj) => {
+            return value.order.callbackUrl === avoidDuplicateUrl;
+        });
+
+        if (!!duplicate) {
+            return duplicate;
+        }
+
+        if (!subject) {
+            this.create();
+            return this.findAvailable(avoidDuplicateUrl);
+        }
+
+        return subject;
     }
 
     private save() {
