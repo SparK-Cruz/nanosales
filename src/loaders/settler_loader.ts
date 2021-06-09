@@ -1,4 +1,4 @@
-import * as nano from '@thelamer/nanocurrency';
+import * as nano from 'nanocurrency';
 import * as files from './files';
 
 export const loadSettler = (): Promise<string> => {

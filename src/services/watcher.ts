@@ -18,6 +18,7 @@ export class Watcher {
         }
         this.receiver.receive(subject)
             .then(paymentInfo => {
+                console.log('Payment received', address, paymentInfo);
                 this.address.addPayment(address, paymentInfo);
                 this.notifyUser(subject.order.callbackUrl);
                 this.node.removeSub(address);

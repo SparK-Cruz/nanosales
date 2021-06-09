@@ -1,6 +1,6 @@
 import { EventEmitter } from 'events';
 import * as WebSocket from 'ws';
-import * as nano from '@thelamer/nanocurrency';
+import * as nano from 'nanocurrency';
 
 import { RpcClient } from './rpc_client';
 import { AddressInfo } from './address';
@@ -40,11 +40,13 @@ export class Node extends EventEmitter {
     private ws: WebSocket;
     private rpc: RpcClient;
 
-    public constructor(ws: string, rpc: string) {
+    public constructor(wsAddr: string, rpcAddr: string) {
         super();
 
-        this.rpc = new RpcClient(rpc);
-        this.bindSocket(new WebSocket(ws));
+        this.rpc = new RpcClient(rpcAddr);
+        this.bindSocket(new WebSocket(wsAddr, {
+            handshakeTimeout: 5000,
+        }));
     }
 
     public head(address: string): Promise<{hash: string, balance: number}> {
@@ -56,6 +58,8 @@ export class Node extends EventEmitter {
         return new Promise((resolve, reject) => {
             this.rpc.send(payload)
                 .then(info => {
+                    console.log('Head info', address, info);
+
                     if (typeof info.error !== 'undefined') {
                         resolve({
                             hash: null,
@@ -76,7 +80,8 @@ export class Node extends EventEmitter {
     public pending(address: string): Promise<Pending[]> {
         const payload = {
             action: 'pending',
-            account: address
+            account: address,
+            threshold: 1,
         };
 
         return new Promise((resolve, reject) => {
@@ -135,12 +140,18 @@ export class Node extends EventEmitter {
             action: 'process',
             json_block: 'true',
             subtype: type,
-            block: nano.createBlock(address.key, block)
+            block: nano.createBlock(address.key, block).block
         };
 
         return new Promise((resolve, reject) => {
+            console.log(JSON.stringify(payload));
+
             this.rpc.send(payload)
                 .then(res => {
+                    if (typeof res.error !== 'undefined') {
+                        reject(res.error);
+                    }
+
                     resolve(res.hash);
                 })
                 .catch(reject);
@@ -148,36 +159,38 @@ export class Node extends EventEmitter {
     }
 
     public addSub(address: string): void {
-        this.ws.send({
-            "action": "update",
-            "topic": "confirmation",
-            "options": {
+        this.ws.send(JSON.stringify({
+            action: "update",
+            topic: "confirmation",
+            options: {
                 "accounts_add": [address]
             }
-        });
+        }));
     }
 
     public removeSub(address: string): void {
-        this.ws.send({
-            "action": "update",
-            "topic": "confirmation",
-            "options": {
-                "accounts_del": [address]
+        this.ws.send(JSON.stringify({
+            action: "update",
+            topic: "confirmation",
+            options: {
+                accounts_del: [address]
             }
-        });
+        }));
     }
 
     private bindSocket(ws: WebSocket): void {
         this.ws = ws;
 
         ws.on('open', () => {
-            ws.send({
-                "action": "subscribe",
-                "topic": "confirmation",
-                "options": {
-                    "accounts": []
+            ws.send(JSON.stringify({
+                action: "subscribe",
+                topic: "confirmation",
+                options: {
+                    accounts: []
                 }
-            });
+            }));
+
+            this.emit('open');
         });
 
         ws.on('message', (message: any) => {

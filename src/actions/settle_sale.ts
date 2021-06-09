@@ -9,6 +9,8 @@ export function settleSaleAction(node: Node, address: Address, settler: Settler)
             res.status(500).json({
                 error: err
             });
+            console.error(err);
+            throw err;
         };
 
         try {

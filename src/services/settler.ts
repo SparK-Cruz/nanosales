@@ -1,4 +1,4 @@
-import * as nano from '@thelamer/nanocurrency';
+import * as nano from 'nanocurrency';
 import { AddressInfo } from "./address";
 
 export class Settler {
@@ -16,7 +16,7 @@ export class Settler {
 
         // Assynchronous part
         return new Promise((resolve, reject) => {
-            nano.computeWork(block.hash)
+            nano.computeWork(block.hash, {workThreshold: 'fffffff800000000'})
                 .then(work => {
                     data.work = work;
                     resolve(data);

@@ -38,11 +38,13 @@ export function saleInfoAction(node: Node, address: Address, receiver: Receiver)
                     res.status(500).json({
                         error: err
                     });
+                    console.error(err);
                 });
         } catch(err) {
             res.status(500).json({
                 error: err
             });
+            throw err;
         }
     };
 }

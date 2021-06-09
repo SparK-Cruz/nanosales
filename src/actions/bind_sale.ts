@@ -1,4 +1,5 @@
 import * as express from 'express';
+import { rawToString } from '../patches/number';
 import { Address } from '../services/address';
 import { Node } from '../services/node';
 
@@ -14,7 +15,7 @@ export function bindSaleAction(node: Node, address: Address): express.RequestHan
                 'nano:',
                 result,
                 '?amount=',
-                req.body.amount
+                rawToString(req.body.amount)
             ].join('');
 
             res.status(201).send({
@@ -26,6 +27,7 @@ export function bindSaleAction(node: Node, address: Address): express.RequestHan
             res.status(500).json({
                 error: err
             });
+            throw err;
         }
     }
 }

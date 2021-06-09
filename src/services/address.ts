@@ -1,4 +1,5 @@
-import * as nano from '@thelamer/nanocurrency';
+import * as nano from 'nanocurrency';
+import { EventEmitter } from 'events';
 import { PoolPersistence } from './pool_persistence';
 
 export interface CheckInfo {
@@ -25,11 +26,17 @@ export interface AddressInfo {
     payment?: null|PaymentInfo,
 }
 
-export class Address {
+export class Address extends EventEmitter {
     private info: AddressInfo[] = [];
 
     public constructor(private seed: string) {
+        super();
+
         this.info = PoolPersistence.load();
+
+        this.info.forEach(address => {
+            setTimeout(() => this.emit('pending', address.address), 0);
+        });
     }
 
     public get length(): number {
@@ -109,7 +116,7 @@ export class Address {
         });
 
         const duplicate = this.info.find((value, index, obj) => {
-            return value.order.callbackUrl === avoidDuplicateUrl;
+            return value.order?.callbackUrl === avoidDuplicateUrl;
         });
 
         if (!!duplicate) {

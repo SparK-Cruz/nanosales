@@ -1,13 +1,18 @@
-import * as nano from '@thelamer/nanocurrency';
+import * as nano from 'nanocurrency';
+import { Worker } from 'worker_threads';
+import { pow_callback, pow_initiate } from '../lib/pow/startThreads';
+import { rawToString } from '../patches/number';
 import { AddressInfo, PaymentInfo } from "./address";
 import { BlockType, Node, Pending } from "./node";
 
 const FIRST_BLOCK = '0000000000000000000000000000000000000000000000000000000000000000';
+const WORK_THRESHOLD = 'fffffe0000000000';
 
 export class Receiver {
     public constructor(private node: Node, private rep: string) {}
 
     public receive(info: AddressInfo): Promise<PaymentInfo> {
+        console.log('Attempting receive', info.address);
         return new Promise((resolve, reject) => {
             this.node.head(info.address)
                 .then(data => {
@@ -17,12 +22,12 @@ export class Receiver {
                         balance: data.balance || 0,
                     };
 
-                    resolve(
-                        this.node.pending(info.address)
-                            .then(blocks => {
-                                return this.handlePending(info, blocks, last);
-                            })
-                    );
+                    this.node.pending(info.address)
+                        .then(blocks => {
+                            console.log(blocks);
+                            resolve(this.handlePending(info, blocks, last));
+                        })
+                        .catch(reject);
                 })
                 .catch(reject);
         });
@@ -36,10 +41,12 @@ export class Receiver {
                 return;
             }
 
+            console.log(last);
+
             const first = pending.shift();
             this.receiveOne(address, first, last).then(info => {
                 info.amount += last.amount;
-                resolve(this.handlePending(address, pending, info));
+                this.handlePending(address, pending, info).then(resolve);
             })
             .catch(reject);
         });
@@ -66,8 +73,10 @@ export class Receiver {
     }
 
     private prepareReceive(address: AddressInfo, pending: Pending, balance: number, prev: string): Promise<nano.BlockData> {
+        console.log(pending);
+
         const data: nano.BlockData = {
-            balance: balance.toFixed(0),
+            balance: rawToString(balance),
             representative: this.rep,
             work: null,
             link: pending.block,
@@ -75,14 +84,19 @@ export class Receiver {
         };
         const block = nano.createBlock(address.key, data);
 
+        console.log(data);
+        const workers: Worker[] = pow_initiate();
+
         // Assynchronous part
         return new Promise((resolve, reject) => {
-            nano.computeWork(block.hash)
-                .then(work => {
+            try {
+                pow_callback(workers, block.hash, WORK_THRESHOLD, (work: string) => {
                     data.work = work;
                     resolve(data);
-                })
-                .catch(reject)
+                });
+            } catch (err) {
+                reject(err);
+            }
         });
     }
 }
