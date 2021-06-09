@@ -29,14 +29,18 @@ export interface AddressInfo {
 export class Address extends EventEmitter {
     private info: AddressInfo[] = [];
 
-    public constructor(private seed: string) {
+    public constructor(private seed: string, private minAddresses: number) {
         super();
 
         this.info = PoolPersistence.load();
 
         this.info.forEach(address => {
-            setTimeout(() => this.emit('pending', address.address), 0);
+            setTimeout(() => this.emit('pending', address), 0);
         });
+
+        if (this.info.length < minAddresses) {
+            this.create(minAddresses - this.info.length);
+        }
     }
 
     public get length(): number {

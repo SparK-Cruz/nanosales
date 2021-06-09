@@ -14,10 +14,18 @@ export function settleSaleAction(address: Address, settler: Settler): express.Re
 
         try {
             const subject = address.find(req.params.address);
+            if (!subject) {
+                catcher('E02: Address not found!');
+                return;
+            }
+
             settler.settle(subject)
                 .then(hash => {
                     address.release(subject.address);
                     console.log('Settlement', subject.address, hash);
+                    res.status(200).json({
+                        hash,
+                    });
                 })
                 .catch(catcher);
         } catch(err) {

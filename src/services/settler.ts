@@ -8,6 +8,9 @@ export class Settler {
 
     public settle(subject: AddressInfo): Promise<string> {
         return new Promise((resolve, reject) => {
+            if (typeof subject.payment === 'undefined')
+                reject('E03: No payment present for address!');
+
             this.prepareSend(subject)
                 .then(blockData => {
                     this.node.publish(subject, BlockType.SEND, blockData)
@@ -25,11 +28,10 @@ export class Settler {
             link: this.settler,
             previous: subject.payment.block
         };
-        const block = nano.createBlock(subject.key, data);
 
         // Assynchronous part
         return new Promise((resolve, reject) => {
-            this.work.work(block.hash, BlockType.SEND)
+            this.work.work(subject.payment.block, BlockType.SEND)
                 .then(work => {
                     data.work = work;
                     resolve(data);

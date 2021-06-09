@@ -24,10 +24,10 @@ export function bindSaleAction(node: Node, address: Address): express.RequestHan
 
             node.addSub(result);
         } catch (err) {
+            console.log(err);
             res.status(500).json({
                 error: err
             });
-            throw err;
         }
     }
 }

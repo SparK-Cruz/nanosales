@@ -1,5 +1,5 @@
 import { AxiosResponse } from "axios";
-const axios = require('axios');
+import axios from "axios";
 
 export class RpcClient {
     public constructor(private base: string) {}

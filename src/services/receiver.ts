@@ -23,6 +23,11 @@ export class Receiver {
                     this.node.pending(info.address)
                         .then(blocks => {
                             console.log(blocks);
+                            if (!blocks.length) {
+                                reject('No blocks to receive!');
+                                return;
+                            }
+
                             resolve(this.handlePending(info, blocks, last));
                         })
                         .catch(reject);
@@ -80,11 +85,12 @@ export class Receiver {
             link: pending.block,
             previous: prev
         };
-        const block = nano.createBlock(address.key, data);
+        const publicKey = nano.derivePublicKey(address.key);
+        const hash = prev === FIRST_BLOCK ? publicKey : prev;
 
         // Assynchronous part
         return new Promise((resolve, reject) => {
-            this.work.work(block.hash, BlockType.RECEIVE)
+            this.work.work(hash, BlockType.RECEIVE)
                 .then(work => {
                     data.work = work;
                     resolve(data);

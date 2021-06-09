@@ -3,7 +3,7 @@ import * as bodyParser from 'body-parser';
 import { loadConfig } from './loaders/config_loader';
 import { loadSettler } from './loaders/settler_loader';
 import { loadSeed } from './loaders/seed_loader';
-import { Address } from './services/address';
+import { Address, AddressInfo } from './services/address';
 import { Node } from './services/node';
 import { Watcher } from './services/watcher';
 import { Receiver } from './services/receiver';
@@ -28,17 +28,31 @@ import { Work } from './services/work';
 
         const node = new Node(config.nodeWs, config.nodeRpc);
         const work = new Work(node, config.workRpc);
-        const address = new Address(seed);
+        const address = new Address(seed, config.minPoolAddresses);
         const receiver = new Receiver(node, work, settlerAddress);
         const settler = new Settler(node, work, settlerAddress);
 
-        const pending: string[] = [];
-        address.on('pending', address => {
-            pending.push(address);
+        const watcher = new Watcher(node, address, receiver);
+
+        const pending: AddressInfo[] = [];
+        address.on('pending', account => {
+            if (typeof account.order !== 'undefined' && typeof account.payment === 'undefined') {
+                pending.push(account);
+            }
         });
         node.once('open', () => {
             setTimeout(() => {
-                pending.forEach(address => node.addSub(address));
+                pending.forEach(account => {
+                    receiver.receive(account)
+                        .then(info => {
+                            address.addPayment(account.address, info);
+                            watcher.notifyUser(account.order);
+                        })
+                        .catch(err => {
+                            console.warn(err);
+                            node.addSub(account.address);
+                        });
+                });
             }, 5000);
         });
 
@@ -49,8 +63,6 @@ import { Work } from './services/work';
         app.listen(PORT, () => {
             console.log(`Payment server running at port ${PORT}`);
         });
-
-        new Watcher(node, address, receiver);
     })
     .catch(err => {
         console.error(err);

@@ -1,8 +1,7 @@
-import * as https from 'https';
-import * as http from 'http';
-import { Address } from "./address";
+import { Address, OrderInfo } from "./address";
 import { Node } from "./node";
 import { Receiver } from "./receiver";
+import axios from 'axios';
 
 export class Watcher {
     public constructor(private node: Node, private address: Address, private receiver: Receiver) {
@@ -20,7 +19,7 @@ export class Watcher {
             .then(paymentInfo => {
                 console.log('Payment received', address, paymentInfo);
                 this.address.addPayment(address, paymentInfo);
-                this.notifyUser(subject.order.callbackUrl);
+                this.notifyUser(subject.order);
                 this.node.removeSub(address);
             })
             .catch(err => {
@@ -28,10 +27,8 @@ export class Watcher {
             });
     }
 
-    private notifyUser(url: string): void {
-        const parsed = new URL(url);
-        const driver = parsed.protocol === 'https' ? https : http;
-
-        driver.request(parsed);
+    public notifyUser(order: OrderInfo): void {
+        const request = axios.create();
+        request.get(order.callbackUrl);
     }
 }

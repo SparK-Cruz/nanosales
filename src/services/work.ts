@@ -1,3 +1,4 @@
+import * as nano from 'nanocurrency';
 import { Worker } from 'worker_threads';
 import { pow_callback, pow_initiate } from '../lib/pow/startThreads';
 import { Node, BlockType } from "./node";
@@ -22,7 +23,7 @@ export class Work {
         return fallback([
             () => this.nodePow(hash, threshold),
             () => this.serverPow(hash, threshold),
-            () => this.localPow(hash, threshold),
+            () => this.localPow(hash, threshold, blockType),
         ]);
     }
 
@@ -56,9 +57,15 @@ export class Work {
         });
     }
 
-    private localPow(hash: string, threshold: string): Promise<string> {
+    private localPow(hash: string, threshold: string, blockType: BlockType): Promise<string> {
         return new Promise((resolve, reject) => {
+            // use nanocurrency for SEND blocks (threshold problem)
+            if (blockType === BlockType.SEND) {
+                return nano.computeWork(hash, { workThreshold: threshold });
+            }
+
             try {
+                // this method doesn't understand thresholds
                 const workers: Worker[] = pow_initiate();
                 pow_callback(workers, hash, threshold, (work: string) => {
                     resolve(work);
