@@ -4,6 +4,7 @@ export interface Config {
     minPoolAddresses: number,
     nodeWs: string,
     nodeRpc: string,
+    workRpc?: string,
 };
 
 export const loadConfig = (): Promise<Config> => {

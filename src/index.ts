@@ -12,6 +12,7 @@ import { saleInfoAction } from './actions/sale_info';
 import { settleSaleAction } from './actions/settle_sale';
 import { bindSaleAction } from './actions/bind_sale';
 import { errorLogger, requestLogger } from './middleware/logging';
+import { Work } from './services/work';
 
 (() => {
     const app = express();
@@ -26,9 +27,10 @@ import { errorLogger, requestLogger } from './middleware/logging';
         const [config, settlerAddress, seed] = data;
 
         const node = new Node(config.nodeWs, config.nodeRpc);
+        const work = new Work(node, config.workRpc);
         const address = new Address(seed);
-        const receiver = new Receiver(node, settlerAddress);
-        const settler = new Settler(settlerAddress);
+        const receiver = new Receiver(node, work, settlerAddress);
+        const settler = new Settler(node, work, settlerAddress);
 
         const pending: string[] = [];
         address.on('pending', address => {
@@ -42,7 +44,7 @@ import { errorLogger, requestLogger } from './middleware/logging';
 
         app.post('/sales', bindSaleAction(node, address));
         app.get('/sales/:address', saleInfoAction(node, address, receiver));
-        app.delete('/sales/:address', settleSaleAction(node, address, settler));
+        app.delete('/sales/:address', settleSaleAction(address, settler));
 
         app.listen(PORT, () => {
             console.log(`Payment server running at port ${PORT}`);

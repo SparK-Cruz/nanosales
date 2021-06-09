@@ -1,15 +1,13 @@
 import * as nano from 'nanocurrency';
-import { Worker } from 'worker_threads';
-import { pow_callback, pow_initiate } from '../lib/pow/startThreads';
 import { rawToString } from '../patches/number';
 import { AddressInfo, PaymentInfo } from "./address";
 import { BlockType, Node, Pending } from "./node";
+import { Work } from './work';
 
 const FIRST_BLOCK = '0000000000000000000000000000000000000000000000000000000000000000';
-const WORK_THRESHOLD = 'fffffe0000000000';
 
 export class Receiver {
-    public constructor(private node: Node, private rep: string) {}
+    public constructor(private node: Node, private work: Work, private rep: string) {}
 
     public receive(info: AddressInfo): Promise<PaymentInfo> {
         console.log('Attempting receive', info.address);
@@ -84,19 +82,14 @@ export class Receiver {
         };
         const block = nano.createBlock(address.key, data);
 
-        console.log(data);
-        const workers: Worker[] = pow_initiate();
-
         // Assynchronous part
         return new Promise((resolve, reject) => {
-            try {
-                pow_callback(workers, block.hash, WORK_THRESHOLD, (work: string) => {
+            this.work.work(block.hash, BlockType.RECEIVE)
+                .then(work => {
                     data.work = work;
                     resolve(data);
-                });
-            } catch (err) {
-                reject(err);
-            }
+                })
+                .catch(reject);
         });
     }
 }

@@ -135,6 +135,27 @@ export class Node extends EventEmitter {
         })
     }
 
+    public work(hash: string, difficulty: string): Promise<string> {
+        const payload: any = {
+            action: 'work_generate',
+            hash,
+            difficulty
+        };
+
+        return new Promise((resolve, reject) => {
+            this.rpc.send(payload)
+                .then(res => {
+                    if (typeof res.error !== 'undefined') {
+                        reject(res.error);
+                        return;
+                    }
+
+                    resolve(res.work);
+                })
+                .catch(reject);
+        });
+    }
+
     public publish(address: AddressInfo, type: BlockType, block: nano.BlockData): Promise<string> {
         const payload: any = {
             action: 'process',

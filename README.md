@@ -69,6 +69,7 @@ TODO: generate logs for every transaction.
 
 # BUILDING
 
+`yarn install`
 `yarn build`
 
 # RUNNING
