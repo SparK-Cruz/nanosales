@@ -23,7 +23,7 @@ This payment gateway helper is configured with three files:
 
 Three simple http endpoints:
 
-## POST /sales
+### POST /sales
 
 This endpoint creates/allocates an address for the payment, registering a callback url and a desired amount.
 
@@ -48,7 +48,7 @@ Once any block is confirmed for that address the callback is called via GET, no 
 }
 ```
 
-## GET /sales/nano_3oneTimeDepositAddressToDisplayAtTheCheckoutPage111111111111
+### GET /sales/nano_3oneTimeDepositAddressToDisplayAtTheCheckoutPage111111111111
 
 This endpoint informs the shop about the payment status, it is meant to be called right after the shop receives a callback. Meaning the shop must store the address for that order on their side.
 
@@ -62,7 +62,7 @@ This endpoint informs the shop about the payment status, it is meant to be calle
 }
 ```
 
-## DELETE /sales/nano_3oneTimeDepositAddressToDisplayAtTheCheckoutPage111111111111
+### DELETE /sales/nano_3oneTimeDepositAddressToDisplayAtTheCheckoutPage111111111111
 
 Once payment is confirmed on the shop it can release the address and settle the balance on their main address.
 It is recommended that uppon settlement the address is removed from the shop's order information to avoid mix ups.
@@ -80,5 +80,7 @@ TODO: generate logs for every transaction.
 # DONATION
 
 If it works for you, throw me a bone:
+
 nano_3ntf6crkan6114rfb39d51udqdw4mrbt1x7n8uphx44ojhxcjo3exhk6dsme
+
 ![nano_3ntf6crkan6114rfb39d51udqdw4mrbt1x7n8uphx44ojhxcjo3exhk6dsme](./donation.png)
