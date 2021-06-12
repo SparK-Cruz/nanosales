@@ -47,6 +47,12 @@ Once any block is confirmed for that address the callback is called via GET, no 
     "address": "nano_3oneTimeDepositAddressToDisplayAtTheCheckoutPage111111111111"
 }
 ```
+or in case the url has already been used and paid for:
+```
+{
+    "paid": true
+}
+```
 
 ### GET /sales/nano_3oneTimeDepositAddressToDisplayAtTheCheckoutPage111111111111
 
