@@ -2,6 +2,7 @@ import * as nano from 'nanocurrency';
 import { AddressInfo } from "./address";
 import { BlockType, Node } from './node';
 import { Work } from './work';
+import { SettlementPersistence, SettlementInfo } from './settlement_persistence';
 
 export class Settler {
     public constructor(private node: Node, private work: Work, private settler: string) {}
@@ -19,7 +20,17 @@ export class Settler {
                         .then(result => {
                             console.log(result);
                             this.node.publish(subject, BlockType.SEND, blockData)
-                                .then(resolve)
+                                .then(hash => {
+                                    const info: SettlementInfo = {
+                                        url: subject.order.callbackUrl,
+                                        hash,
+                                        amount: subject.payment.amount,
+                                    };
+
+                                    resolve(hash);
+
+                                    SettlementPersistence.save(info);
+                                })
                                 .catch(reject);
                         });
                 });

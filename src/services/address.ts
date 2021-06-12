@@ -71,13 +71,13 @@ export class Address extends EventEmitter {
         this.save();
     }
 
-    public bindAvailable(order: OrderInfo): string {
+    public bindAvailable(order: OrderInfo): AddressInfo {
         const subject = this.findAvailable(order.callbackUrl);
 
         subject.order = order;
         this.save();
 
-        return subject.address;
+        return subject;
     }
 
     public addPayment(address: string, payment: PaymentInfo): void {

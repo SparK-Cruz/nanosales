@@ -4,4 +4,5 @@ dist
 wallet.seed
 settle.pub
 data/pool.json
-*.json.bkp
+data/settlements/*.json
+config.json
