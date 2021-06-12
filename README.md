@@ -66,7 +66,7 @@ This endpoint informs the shop about the payment status, it is meant to be calle
 
 Once payment is confirmed on the shop it can release the address and settle the balance on their main address.
 It is recommended that uppon settlement the address is removed from the shop's order information to avoid mix ups.
-TODO: generate logs for every transaction.
+Each settlement is recorded in a separate json file in `data/settlements`, the filename being the md5sum of the shop callback url to avoid double pay.
 
 # BUILDING
 
