@@ -35,29 +35,18 @@ import { Work } from './services/work';
         const watcher = new Watcher(node, address, receiver);
 
         const pending: AddressInfo[] = [];
-        address.on('pending', account => {
-            if (typeof account.order !== 'undefined' && typeof account.payment === 'undefined') {
-                pending.push(account);
-            }
+        address.on('pending', (account: AddressInfo) => {
+            pending.push(account);
         });
         node.once('open', () => {
-            setTimeout(() => {
-                pending.forEach(account => {
-                    receiver.receive(account)
-                        .then(info => {
-                            address.addPayment(account.address, info);
-                            watcher.notifyUser(account.order);
-                        })
-                        .catch(err => {
-                            console.warn(err);
-                            node.addSub(account.address);
-                        });
-                });
-            }, 5000);
+            pending.forEach(account => {
+                node.addSub(account.address);
+                watcher.receiveAddress(account);
+            });
         });
 
         app.post('/sales', bindSaleAction(node, address));
-        app.get('/sales/:address', saleInfoAction(node, address, receiver));
+        app.get('/sales/:address', saleInfoAction(address, receiver));
         app.delete('/sales/:address', settleSaleAction(address, settler));
 
         app.listen(PORT, () => {

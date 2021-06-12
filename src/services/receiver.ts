@@ -44,8 +44,6 @@ export class Receiver {
                 return;
             }
 
-            console.log(last);
-
             const first = pending.shift();
             this.receiveOne(address, first, last).then(info => {
                 info.amount += last.amount;
@@ -61,15 +59,19 @@ export class Receiver {
 
             this.prepareReceive(address, pending, balance, prev.block)
                 .then(block => {
-                    this.node.publish(address, BlockType.RECEIVE, block)
-                        .then(hash => {
-                            resolve({
-                                block: hash,
-                                amount: pending.amount,
-                                balance: balance,
-                            });
-                        })
-                        .catch(reject);
+                    this.node.checkWork(block.work, block.previous)
+                        .then(result => {
+                            console.log(result);
+                            this.node.publish(address, BlockType.RECEIVE, block)
+                                .then(hash => {
+                                    resolve({
+                                        block: hash,
+                                        amount: pending.amount,
+                                        balance: balance,
+                                    });
+                                })
+                                .catch(reject);
+                        });
                 })
                 .catch(reject);
         });

@@ -11,11 +11,17 @@ export class Settler {
             if (typeof subject.payment === 'undefined')
                 reject('E03: No payment present for address!');
 
+            console.log('Generating settlement:', subject.address);
+
             this.prepareSend(subject)
                 .then(blockData => {
-                    this.node.publish(subject, BlockType.SEND, blockData)
-                    .then(resolve)
-                    .catch(reject);
+                    this.node.checkWork(blockData.work, blockData.previous)
+                        .then(result => {
+                            console.log(result);
+                            this.node.publish(subject, BlockType.SEND, blockData)
+                                .then(resolve)
+                                .catch(reject);
+                        });
                 });
         });
     }

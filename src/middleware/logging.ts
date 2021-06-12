@@ -37,7 +37,7 @@ function getRequestLogFormatter() {
         timestamp(),
         printf(info => {
             const {req} = <any>info.message;
-            return `${info.timestamp} ${info.level}: ${req.hostname}${req.port || ''}${req.originalUrl}`;
+            return `${info.timestamp} ${info.level}: ${req.method} ${req.hostname}${req.port || ''}${req.originalUrl}`;
         })
     );
 }

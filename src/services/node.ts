@@ -36,17 +36,27 @@ export interface BlockInfo {
     subtype: string
 }
 
+const CONNECTION_DELAY = 1000;
+const SOCKET_TIMEOUT = 5000;
+const KEEP_ALIVE = 30000;
+
+const BURN_ADDRESS = 'nano_111111111113y131i3165iy4aij6aak5rb166i43rj16ni4ca1rr3owx15q8';
+
 export class Node extends EventEmitter {
     private ws: WebSocket;
     private rpc: RpcClient;
 
+    private subs: string[] = [];
+
     public constructor(wsAddr: string, rpcAddr: string) {
         super();
 
-        this.rpc = new RpcClient(rpcAddr);
-        this.bindSocket(new WebSocket(wsAddr, {
-            handshakeTimeout: 5000,
-        }));
+        setTimeout(() => {
+            this.rpc = new RpcClient(rpcAddr);
+            this.bindSocket(new WebSocket(wsAddr, {
+                handshakeTimeout: SOCKET_TIMEOUT,
+            }));
+        }, CONNECTION_DELAY);
     }
 
     public head(address: string): Promise<{hash: string, balance: number}> {
@@ -135,6 +145,16 @@ export class Node extends EventEmitter {
         })
     }
 
+    public checkWork(work: string, hash: string): Promise<any> {
+        const payload: any = {
+            action: 'work_validate',
+            work,
+            hash,
+        }
+
+        return this.rpc.send(payload);
+    }
+
     public work(hash: string, difficulty: string): Promise<string> {
         const payload: any = {
             action: 'work_generate',
@@ -180,21 +200,17 @@ export class Node extends EventEmitter {
     }
 
     public addSub(address: string): void {
-        this.ws.send(JSON.stringify({
-            action: "update",
-            topic: "confirmation",
-            options: {
-                "accounts_add": [address]
-            }
-        }));
-    }
+        if (this.subs.includes(address)) {
+            return;
+        }
 
-    public removeSub(address: string): void {
+        console.log('WS Subscribing for:', address);
+        this.subs.push(address);
         this.ws.send(JSON.stringify({
             action: "update",
             topic: "confirmation",
             options: {
-                accounts_del: [address]
+                "accounts_add": this.subs
             }
         }));
     }
@@ -207,15 +223,26 @@ export class Node extends EventEmitter {
                 action: "subscribe",
                 topic: "confirmation",
                 options: {
-                    accounts: []
+                    accounts: [BURN_ADDRESS]
                 }
             }));
 
             this.emit('open');
+
+            setInterval(() => {
+                ws.send(JSON.stringify({
+                    action: 'ping'
+                }));
+            }, KEEP_ALIVE);
         });
 
-        ws.on('message', (message: any) => {
-            const parsed = JSON.parse(message.data);
+        ws.on('message', (data: any) => {
+            const parsed = JSON.parse(data);
+
+            if (parsed.ack) {
+                console.log('WS: keepalive');
+                return;
+            }
 
             switch(parsed.topic) {
                 case "confirmation":

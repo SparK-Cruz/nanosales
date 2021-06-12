@@ -24,7 +24,7 @@ export function bindSaleAction(node: Node, address: Address): express.RequestHan
 
             node.addSub(result);
         } catch (err) {
-            console.log(err);
+            console.error(err);
             res.status(500).json({
                 error: err
             });

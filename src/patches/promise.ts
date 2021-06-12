@@ -3,7 +3,6 @@ function wrap(call: () => Promise<any>, resolve: (obj: any) => any, next: (obj: 
         return call()
             .then(resolve)
             .catch(err => {
-                console.error(err);
                 next(err);
             });
     }

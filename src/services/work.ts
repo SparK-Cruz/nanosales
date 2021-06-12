@@ -1,12 +1,12 @@
-import * as nano from 'nanocurrency';
-import { Worker } from 'worker_threads';
-import { pow_callback, pow_initiate } from '../lib/pow/startThreads';
 import { Node, BlockType } from "./node";
 import { fallback } from '../patches/promise';
 import { RpcClient } from './rpc_client';
+import { LocalWorkerManager } from './local_worker';
 
 const WORK_THRESHOLD = 'fffffff800000000';
 const RECEIVE_WORK_THRESHOLD = 'fffffe0000000000';
+
+const MAX_LOCAL_WORKERS = 6;
 
 export class Work {
     private rpc: RpcClient;
@@ -21,9 +21,9 @@ export class Work {
         const threshold = blockType === BlockType.RECEIVE ? RECEIVE_WORK_THRESHOLD : WORK_THRESHOLD;
 
         return fallback([
-            () => this.nodePow(hash, threshold),
             () => this.serverPow(hash, threshold),
-            () => this.localPow(hash, threshold, blockType),
+            () => this.nodePow(hash, threshold),
+            () => this.localPow(hash, threshold),
         ]);
     }
 
@@ -57,19 +57,11 @@ export class Work {
         });
     }
 
-    private localPow(hash: string, threshold: string, blockType: BlockType): Promise<string> {
+    private localPow(hash: string, threshold: string): Promise<string> {
         return new Promise((resolve, reject) => {
-            // use nanocurrency for SEND blocks (threshold problem)
-            if (blockType === BlockType.SEND) {
-                return nano.computeWork(hash, { workThreshold: threshold });
-            }
-
             try {
-                // this method doesn't understand thresholds
-                const workers: Worker[] = pow_initiate();
-                pow_callback(workers, hash, threshold, (work: string) => {
-                    resolve(work);
-                });
+                const localWork = new LocalWorkerManager(MAX_LOCAL_WORKERS);
+                localWork.work(hash, threshold).then(resolve);
             } catch (err) {
                 reject(err);
             }

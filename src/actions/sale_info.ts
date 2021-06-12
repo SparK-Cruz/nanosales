@@ -6,7 +6,6 @@ import { Receiver } from '../services/receiver';
 const attemptReceive = (
     addressService: Address,
     receiver: Receiver,
-    node: Node,
     address: string,
 ): Promise<void> => {
     return new Promise((resolve, reject) => {
@@ -14,14 +13,13 @@ const attemptReceive = (
         receiver.receive(subject)
             .then(paymentInfo => {
                 addressService.addPayment(address, paymentInfo);
-                node.removeSub(address);
                 resolve();
             })
             .catch(reject);
     });
 }
 
-export function saleInfoAction(node: Node, address: Address, receiver: Receiver): express.RequestHandler {
+export function saleInfoAction(address: Address, receiver: Receiver): express.RequestHandler {
     return (req: express.Request, res: express.Response) => {
         try {
             const payload = address.check(req.params.address);
@@ -30,7 +28,7 @@ export function saleInfoAction(node: Node, address: Address, receiver: Receiver)
                 return;
             }
 
-            attemptReceive(address, receiver, node, req.params.address)
+            attemptReceive(address, receiver, req.params.address)
                 .then(() => {
                     res.json(address.check(req.params.address));
                 })

@@ -38,8 +38,8 @@ export class Address extends EventEmitter {
             setTimeout(() => this.emit('pending', address), 0);
         });
 
-        if (this.info.length < minAddresses) {
-            this.create(minAddresses - this.info.length);
+        if (this.info.length < this.minAddresses) {
+            this.create(this.minAddresses - this.info.length);
         }
     }
 
@@ -60,10 +60,11 @@ export class Address extends EventEmitter {
         for (let i = 0; i < many; i++) {
             const key = nano.deriveSecretKey(this.seed, next + i);
             const pub = nano.derivePublicKey(key);
+            const address = nano.deriveAddress(pub, {useNanoPrefix: true});
 
             this.info.push({
-                key: key,
-                address: nano.deriveAddress(pub, {useNanoPrefix: true}),
+                key,
+                address,
             });
         }
 

@@ -24,7 +24,7 @@
     "ws": "^7.4.6"
   },
   "scripts": {
-    "build": "yarn tsc && cp src/lib/pow/pow.wasm dist/lib/pow/pow.wasm",
+    "build": "yarn tsc",
     "serve": "node dist/index.js"
   }
 }

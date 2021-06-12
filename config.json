@@ -1,5 +1,6 @@
 {
-    "minPoolAddresses": 5,
-    "nodeWs": "wss://localhost:7078/ws",
-    "nodeRpc": "https://localhost:7077/api"
+    "minPoolAddresses": 3,
+    "nodeWs": "",
+    "nodeRpc": "",
+    "workRpc": ""
 }
