@@ -4,13 +4,17 @@ import { BlockType, Node } from './node';
 import { Work } from './work';
 import { SettlementPersistence, SettlementInfo } from './settlement_persistence';
 
+const RETRY_TIMER = 15000;
+
 export class Settler {
     public constructor(private node: Node, private work: Work, private settler: string) {}
 
     public settle(subject: AddressInfo): Promise<string> {
         return new Promise((resolve, reject) => {
-            if (typeof subject.payment === 'undefined')
+            if (typeof subject.payment === 'undefined') {
                 reject('E03: No payment present for address!');
+                return;
+            }
 
             console.log('Generating settlement:', subject.address);
 
@@ -32,6 +36,13 @@ export class Settler {
                                     SettlementPersistence.save(info);
                                 })
                                 .catch(reject);
+                        })
+                        .catch(err => {
+                            console.error(err);
+                            console.log('Scheduling retry in', RETRY_TIMER/1000, 'seconds');
+                            setTimeout(() => {
+                                this.settle(subject);
+                            }, RETRY_TIMER);
                         });
                 });
         });

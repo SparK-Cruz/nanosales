@@ -3,6 +3,8 @@ import { BlockType, Node } from "./node";
 import { Receiver } from "./receiver";
 import axios from 'axios';
 
+const RETRY_TIMER = 15000;
+
 export class Watcher {
     public constructor(private node: Node, private address: Address, private receiver: Receiver) {
         this.node.on('block', data => this.handleBlock(data));
@@ -40,6 +42,10 @@ export class Watcher {
             })
             .catch(err => {
                 console.error(err);
+                console.log('Scheduling retry in', RETRY_TIMER/1000, 'seconds');
+                setTimeout(() => {
+                    this.receiveAddress(subject);
+                }, RETRY_TIMER);
             });
     }
 
