@@ -36,7 +36,7 @@ Once any block is confirmed for that address the callback is called via GET, no 
 ```
 {
     "callback": "my.shop/update-payment/123", // unique url for updating a payment status
-    "amount": 1000000000000000000000000000000 // amount in RAW (1 nano)
+    "amount": 1e+30 // amount in RAW (1 nano) same as 1000000000000000000000000000000
 }
 ```
 
@@ -44,7 +44,8 @@ Once any block is confirmed for that address the callback is called via GET, no 
 
 ```
 {
-    "address": "nano_3oneTimeDepositAddressToDisplayAtTheCheckoutPage111111111111"
+    "address": "nano:nano_3oneTimeDepositAddressToDisplayAtTheCheckoutPage111111111111?amount=1000000000000000000000000000000",
+    "wallet": "nano_3oneTimeDepositAddressToDisplayAtTheCheckoutPage111111111111"
 }
 ```
 or in case the url has already been used and paid for:

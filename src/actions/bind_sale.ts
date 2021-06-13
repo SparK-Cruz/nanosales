@@ -32,7 +32,8 @@ export function bindSaleAction(node: Node, address: Address): express.RequestHan
             ].join('');
 
             res.status(201).send({
-                address: url
+                address: url,
+                wallet: result.address,
             });
 
             node.addSub(result.address);
