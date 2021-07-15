@@ -34,23 +34,25 @@ import { Work } from './services/work';
 
         const watcher = new Watcher(node, address, receiver);
 
-        const pending: AddressInfo[] = [];
-        address.on('pending', (account: AddressInfo) => {
-            pending.push(account);
-        });
-        node.once('open', () => {
-            pending.forEach(account => {
-                node.addSub(account.address);
-                watcher.receiveAddress(account);
-            });
-        });
-
         app.post('/sales', bindSaleAction(node, address));
         app.get('/sales/:address', saleInfoAction(address, receiver));
         app.delete('/sales/:address', settleSaleAction(address, settler));
 
         app.listen(PORT, () => {
             console.log(`Payment server running at port ${PORT}`);
+        });
+
+        node.once('open', () => {
+            address.pool.forEach(account => {
+                node.addSub(account.address);
+            });
+
+            // In case websocket fails
+            setInterval(() => {
+                address.pool.forEach(account => {
+                    watcher.receiveAddress(account);
+                });
+            }, 60000);
         });
     })
     .catch(err => {

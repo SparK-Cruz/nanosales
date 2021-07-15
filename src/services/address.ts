@@ -34,13 +34,13 @@ export class Address extends EventEmitter {
 
         this.info = PoolPersistence.load();
 
-        this.info.forEach(address => {
-            setTimeout(() => this.emit('pending', address), 0);
-        });
-
         if (this.info.length < this.minAddresses) {
             this.create(this.minAddresses - this.info.length);
         }
+    }
+
+    public get pool(): AddressInfo[] {
+        return this.info.slice();
     }
 
     public get length(): number {
