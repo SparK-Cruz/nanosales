@@ -29,14 +29,10 @@ export function saleInfoAction(address: Address, receiver: Receiver): express.Re
             }
 
             attemptReceive(address, receiver, req.params.address)
+                .then(() => {})
+                .catch((err: any) => {})
                 .then(() => {
-                    res.json(address.check(req.params.address));
-                })
-                .catch((err: any) => {
-                    res.status(500).json({
-                        error: err
-                    });
-                    console.error(err);
+                    res.json(payload);
                 });
         } catch(err) {
             res.status(500).json({

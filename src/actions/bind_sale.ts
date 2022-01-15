@@ -28,7 +28,7 @@ export function bindSaleAction(node: Node, address: Address): express.RequestHan
                 'nano:',
                 result.address,
                 '?amount=',
-                rawToString(req.body.amount)
+                rawToString(result.order.amount)
             ].join('');
 
             res.status(201).send({
