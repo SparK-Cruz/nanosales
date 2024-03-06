@@ -88,6 +88,7 @@ Each settlement is recorded in a separate json file in `data/settlements`, the f
 
 If it works for you, throw me a bone:
 
+<meta name="nano" content="nano_3ntf6crkan6114rfb39d51udqdw4mrbt1x7n8uphx44ojhxcjo3exhk6dsme" />
 nano_3ntf6crkan6114rfb39d51udqdw4mrbt1x7n8uphx44ojhxcjo3exhk6dsme
 
 ![nano_3ntf6crkan6114rfb39d51udqdw4mrbt1x7n8uphx44ojhxcjo3exhk6dsme](./donation.png)
